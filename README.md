@@ -62,6 +62,74 @@ If everything is set up correctly, you should see your new app running in the An
 
 This is one way to run your app — you can also build it directly from Android Studio or Xcode.
 
+## Build Scripts
+
+This project includes automated build scripts for creating production-ready builds:
+
+### Full Build Script (`build.sh`)
+
+Comprehensive build script with environment setup, cleaning, dependency installation, and building:
+
+```sh
+# Build Android debug APK
+./build.sh android debug
+
+# Build Android release APK  
+./build.sh android release
+
+# Build iOS debug
+./build.sh ios debug
+
+# Build iOS release archive
+./build.sh ios release
+
+# Build both platforms (debug)
+./build.sh both debug
+
+# Build both platforms (release)
+./build.sh both release
+```
+
+The build script automatically:
+- Detects and sets up Android SDK environment
+- Installs dependencies (npm packages and iOS pods)
+- Cleans previous builds
+- Handles environment validation
+
+### Quick Development Script (`dev.sh`)
+
+Faster builds for development without full setup:
+
+```sh
+# Quick Android debug build
+./dev.sh android
+
+# Quick iOS debug build
+./dev.sh ios
+
+# Start Metro bundler
+./dev.sh metro
+```
+
+### Prerequisites
+
+The build scripts will automatically check for and help set up:
+
+**For Android:**
+- Android Studio and Android SDK
+- ANDROID_HOME environment variable
+- ADB (Android Debug Bridge)
+
+**For iOS (macOS only):**
+- Xcode and Xcode Command Line Tools
+- CocoaPods
+
+### Build Output Locations
+
+- **Android Debug APK**: `android/app/build/outputs/apk/debug/app-debug.apk`
+- **Android Release APK**: `android/app/build/outputs/apk/release/app-release.apk`
+- **iOS Release Archive**: `ios/build/LemonadeStandApp.xcarchive`
+
 ## Step 3: Modify your app
 
 Now that you have successfully run the app, let's make changes!
