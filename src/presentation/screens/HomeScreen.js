@@ -30,16 +30,24 @@ const HEADER_MIN_HEIGHT = 80;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
 const HomeScreen = () => {
-  console.log('HomeScreen rendering...');
+  if (__DEV__) {
+    console.log('HomeScreen rendering...');
+  }
   
   const { menuData, loading, error, refresh } = useMenuViewModel();
-  console.log('useMenuViewModel executed successfully');
+  if (__DEV__) {
+    console.log('useMenuViewModel executed successfully');
+  }
   
   const { cartItems, addToCart } = useCartViewModel();
-  console.log('useCartViewModel executed successfully');
+  if (__DEV__) {
+    console.log('useCartViewModel executed successfully');
+  }
   
   const navigation = useNavigation();
-  console.log('useNavigation executed successfully');
+  if (__DEV__) {
+    console.log('useNavigation executed successfully');
+  }
   
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -84,12 +92,12 @@ const HomeScreen = () => {
       console.log('Adding to cart:', {
         item: selectedItem,
         selectedSize: selectedSize,
-        hasPrice: selectedItem.price,
-        hasName: selectedItem.name
+        hasPrice: selectedItem?.price,
+        hasName: selectedItem?.name
       });
       
       await addToCart(selectedItem, 1, selectedSize);
-      alert(`${selectedItem.name} added to cart!`);
+      alert(`${selectedItem?.name || 'Item'} added to cart!`);
       closeItemDetails();
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -102,21 +110,40 @@ const HomeScreen = () => {
       style={styles.menuItem} 
       onPress={() => openItemDetails(item)}
     >
-      <Image source={{ uri: item.image }} style={styles.menuItemImage} />
-      <Text style={styles.menuItemName} numberOfLines={1}>{item.name}</Text>
+      <Image 
+        source={item.image ? { uri: item.image } : { uri: 'https://via.placeholder.com/100x100/cccccc/666666?text=No+Image' }} 
+        style={styles.menuItemImage} 
+      />
+      <Text style={styles.menuItemName} numberOfLines={1}>{item.name || 'Unknown Item'}</Text>
       <View style={styles.priceBadge}>
         <Text style={styles.priceBadgeText}>
-          ${Object.values(item.price)[0]}
+          ${(() => {
+            const priceValue = item.price ? Object.values(item.price)[0] : 0;
+            return typeof priceValue === 'number' ? priceValue.toFixed(2) : '0.00';
+          })()}
         </Text>
       </View>
-      <Text style={styles.menuItemType}>{item.type.toUpperCase()}</Text>
+      <Text style={styles.menuItemType}>{(item.type || 'unknown').toUpperCase()}</Text>
     </TouchableOpacity>
   );
 
-  if (loading && !menuData) {
+  // Debug logging - moved to avoid React rendering issues
+  if (__DEV__) {
+    console.log('HomeScreen state:', {
+      loading,
+      error,
+      menuData: menuData ? {
+        hasDrinkOfTheDay: !!menuData.drinkOfTheDay,
+        menuItemsCount: menuData.menuItems?.length || 0,
+        addonsCount: menuData.addons?.length || 0
+      } : 'null'
+    });
+  }
+
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <MaterialIcons name="local-dining" size={60} color="#FF6B6B" />
+        <MaterialIcons name="local-dining" size={60} color="#FF8C00" />
         <Text style={styles.loadingText}>Preparing our delicious menu...</Text>
       </View>
     );
@@ -135,15 +162,18 @@ const HomeScreen = () => {
     );
   }
 
-  if (!menuData) {
+  if (!menuData || (!menuData.menuItems?.length && !menuData.drinkOfTheDay && !menuData.addons?.length)) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>Menu not available</Text>
+        <Text style={styles.emptyText}>No menu items available</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={refresh}>
+          <Text style={styles.retryButtonText}>Refresh</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  const { drink_of_the_day: drinkOfTheDay, full_menu: fullMenu } = menuData;
+  const drinkOfTheDay = menuData.drinkOfTheDay;
 
   return (
     <View style={styles.container}>
@@ -191,7 +221,10 @@ const HomeScreen = () => {
               activeOpacity={0.95}
             >
               <View style={styles.imageContainer}>
-                <Image source={{ uri: drinkOfTheDay.image }} style={styles.featuredImage} />
+                <Image 
+                  source={drinkOfTheDay?.image ? { uri: drinkOfTheDay.image } : { uri: 'https://via.placeholder.com/300x200/cccccc/666666?text=No+Image' }} 
+                  style={styles.featuredImage} 
+                />
                 <View style={styles.imageOverlay}>
                   <Text style={styles.tapToViewText}>Tap to view</Text>
                 </View>
@@ -199,7 +232,7 @@ const HomeScreen = () => {
               
               <View style={styles.featuredContent}>
                 <View style={styles.drinkHeader}>
-                  <Text style={styles.featuredName}>{drinkOfTheDay.name}</Text>
+                  <Text style={styles.featuredName}>{drinkOfTheDay?.name || 'Featured Drink'}</Text>
                   <View style={styles.ratingContainer}>
                     <MaterialIcons name="star" size={16} color="#FFD700" />
                     <Text style={styles.ratingText}>4.8</Text>
@@ -207,14 +240,17 @@ const HomeScreen = () => {
                 </View>
                 
                 <Text style={styles.featuredDescription} numberOfLines={2}>
-                  {drinkOfTheDay.description}
+                  {drinkOfTheDay?.description || 'Delicious featured beverage'}
                 </Text>
                 
                 <View style={styles.priceAndAction}>
                   <View style={styles.featuredPrice}>
                     <Text style={styles.priceLabel}>Starting from</Text>
                     <Text style={styles.featuredPriceText}>
-                      ${Object.values(drinkOfTheDay.price)[0]}
+                      ${(() => {
+                        const priceValue = drinkOfTheDay?.price ? Object.values(drinkOfTheDay.price)[0] : 0;
+                        return typeof priceValue === 'number' ? priceValue.toFixed(2) : '0.00';
+                      })()}
                     </Text>
                   </View>
                   
@@ -242,9 +278,9 @@ const HomeScreen = () => {
         <View style={[styles.menuContainer, { paddingTop: HEADER_MAX_HEIGHT + 20 }]}>
           <Text style={styles.sectionTitle}>OUR MENU</Text>
           <FlatList
-            data={fullMenu.menu}
+            data={menuData?.menuItems || []}
             renderItem={renderMenuItem}
-            keyExtractor={(item) => item.name}
+            keyExtractor={(item, index) => item?.name || `item-${index}`}
             numColumns={2}
             columnWrapperStyle={styles.menuRow}
             scrollEnabled={false}
@@ -259,14 +295,16 @@ const HomeScreen = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.addonsList}
           >
-            {fullMenu.addons.map((addon) => (
+            {(menuData?.addons || []).map((addon, index) => (
               <TouchableOpacity 
-                key={addon.name} 
+                key={addon?.name || `addon-${index}`} 
                 style={styles.addonItem}
                 onPress={() => openItemDetails(addon)}
               >
-                <Text style={styles.addonName}>{addon.name}</Text>
-                <Text style={styles.addonPrice}>${addon.price}</Text>
+                <Text style={styles.addonName}>{addon?.name || 'Unknown Addon'}</Text>
+                <Text style={styles.addonPrice}>
+                  ${typeof addon?.price === 'number' ? addon.price.toFixed(2) : '0.00'}
+                </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -293,25 +331,25 @@ const HomeScreen = () => {
             {selectedItem && (
               <>
                 <Image 
-                  source={{ uri: selectedItem.image }} 
+                  source={selectedItem?.image ? { uri: selectedItem.image } : { uri: 'https://via.placeholder.com/250x200/cccccc/666666?text=No+Image' }} 
                   style={styles.modalImage} 
                 />
                 <View style={styles.modalDetails}>
-                  <Text style={styles.modalTitle}>{selectedItem.name}</Text>
-                  <Text style={styles.modalType}>{selectedItem.type.toUpperCase()}</Text>
+                  <Text style={styles.modalTitle}>{selectedItem?.name || 'Unknown Item'}</Text>
+                  <Text style={styles.modalType}>{(selectedItem?.type || 'unknown').toUpperCase()}</Text>
                   
                   <Text style={styles.modalDescription}>
-                    {selectedItem.description}
+                    {selectedItem?.description || 'No description available'}
                   </Text>
                   
                   <Text style={styles.modalTaste}>
-                    <Text style={{ fontWeight: 'bold' }}>Taste:</Text> {selectedItem.taste}
+                    <Text style={{ fontWeight: 'bold' }}>Taste:</Text> {selectedItem?.taste || 'N/A'}
                   </Text>
                   
                   <View style={styles.modalPriceSection}>
                     <Text style={styles.modalPriceTitle}>Select Size:</Text>
                     <View style={styles.sizeOptions}>
-                      {Object.entries(selectedItem.price).map(([size, price]) => (
+                      {selectedItem?.price ? Object.entries(selectedItem.price).map(([size, price]) => (
                         <TouchableOpacity
                           key={size}
                           style={[
@@ -321,29 +359,29 @@ const HomeScreen = () => {
                           onPress={() => setSelectedSize(size)}
                         >
                           <Text style={[
-                            styles.sizeOptionText,
-                            selectedSize === size && styles.selectedSizeOptionText
+                            styles.sizeText,
+                            selectedSize === size && styles.selectedSizeText
                           ]}>
-                            {size.toUpperCase()}
+                            {size.charAt(0).toUpperCase() + size.slice(1)}
                           </Text>
                           <Text style={[
-                            styles.sizeOptionPrice,
-                            selectedSize === size && styles.selectedSizeOptionText
+                            styles.sizePriceText,
+                            selectedSize === size && styles.selectedSizePriceText
                           ]}>
-                            ${price}
+                            ${typeof price === 'number' ? price.toFixed(2) : '0.00'}
                           </Text>
                         </TouchableOpacity>
-                      ))}
+                      )) : null}
                     </View>
                   </View>
                   
-                  {selectedItem.options && (
+                  {selectedItem?.options?.length > 0 && (
                     <View style={styles.optionsSection}>
                       <Text style={styles.optionsTitle}>Options:</Text>
                       <View style={styles.optionsContainer}>
-                        {selectedItem.options.map((option) => (
-                          <Text key={option} style={styles.optionItem}>
-                            {option}
+                        {(selectedItem.options || []).map((option, index) => (
+                          <Text key={option || `option-${index}`} style={styles.optionItem}>
+                            {option || 'Unknown Option'}
                           </Text>
                         ))}
                       </View>

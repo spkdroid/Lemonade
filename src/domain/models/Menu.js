@@ -1,64 +1,54 @@
 import { MenuItem } from './MenuItem';
 
 export class Menu {
-  constructor(data) {
-    this.id = data.id || 'menu-' + Date.now();
-    this.name = data.name || 'Lemonade Stand Menu';
-    this.description = data.description || 'Fresh and delicious beverages';
-    this.drinkOfTheDay = data.drink_of_the_day ? new MenuItem(data.drink_of_the_day) : null;
-    this.categories = this.parseCategories(data.full_menu || data.categories || {});
-    this.version = data.version || '1.0';
-    this.lastUpdated = data.lastUpdated || new Date().toISOString();
-    this.currency = data.currency || 'USD';
-    this.tax = data.tax || 0;
-    this.serviceCharge = data.serviceCharge || 0;
-  }
-
-  parseCategories(categoriesData) {
-    const categories = {};
-    
-    for (const [categoryName, items] of Object.entries(categoriesData)) {
-      categories[categoryName] = {
-        name: categoryName,
-        displayName: this.formatCategoryName(categoryName),
-        items: Array.isArray(items) ? items.map(item => new MenuItem(item)) : []
-      };
+  constructor(data = {}) {
+    if (__DEV__) {
+      console.log('Menu constructor called with data:', {
+        hasData: !!data,
+        hasDrinkOfTheDay: !!data.drink_of_the_day,
+        hasFullMenu: !!data.full_menu,
+        hasMenuArray: !!data.full_menu?.menu,
+        hasAddonsArray: !!data.full_menu?.addons,
+        menuArrayLength: data.full_menu?.menu?.length || 0,
+        addonsArrayLength: data.full_menu?.addons?.length || 0
+      });
     }
     
-    return categories;
+    this.drinkOfTheDay = data.drink_of_the_day ? new MenuItem(data.drink_of_the_day) : null;
+    this.menuItems = this.parseMenuItems(data.full_menu?.menu || []);
+    this.addons = this.parseAddons(data.full_menu?.addons || []);
+    
+    if (__DEV__) {
+      console.log('Menu created with:', {
+        drinkOfTheDay: this.drinkOfTheDay?.name || 'None',
+        menuItemsCount: this.menuItems?.length || 0,
+        addonsCount: this.addons?.length || 0
+      });
+    }
   }
 
-  formatCategoryName(categoryName) {
-    return categoryName
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+  parseMenuItems(menuArray) {
+    return Array.isArray(menuArray) ? 
+      menuArray.filter(item => item && typeof item === 'object').map(item => new MenuItem(item)) : [];
+  }
+
+  parseAddons(addonsArray) {
+    return Array.isArray(addonsArray) ? 
+      addonsArray.filter(addon => addon && typeof addon === 'object').map(addon => new MenuItem(addon)) : [];
   }
 
   getAllItems() {
-    const allItems = [];
+    const allItems = [...this.menuItems];
     
     if (this.drinkOfTheDay) {
-      allItems.push(this.drinkOfTheDay);
-    }
-    
-    for (const category of Object.values(this.categories)) {
-      allItems.push(...category.items);
+      allItems.unshift(this.drinkOfTheDay);
     }
     
     return allItems;
   }
 
-  getItemsByCategory(categoryName) {
-    return this.categories[categoryName]?.items || [];
-  }
-
-  getAvailableItems() {
-    return this.getAllItems().filter(item => item.isAvailable());
-  }
-
-  getFeaturedItems() {
-    return this.getAllItems().filter(item => item.isFeatured());
+  getItemsByType(type) {
+    return this.getAllItems().filter(item => item.type === type);
   }
 
   findItemById(itemId) {
@@ -69,35 +59,21 @@ export class Menu {
     return this.getAllItems().find(item => item.name === itemName);
   }
 
-  getCategoryNames() {
-    return Object.keys(this.categories);
-  }
-
   getItemCount() {
     return this.getAllItems().length;
   }
 
-  getAvailableItemCount() {
-    return this.getAvailableItems().length;
+  getAddonCount() {
+    return this.addons.length;
   }
 
   toJSON() {
-    const categoriesJSON = {};
-    for (const [categoryName, category] of Object.entries(this.categories)) {
-      categoriesJSON[categoryName] = category.items.map(item => item.toJSON());
-    }
-
     return {
-      id: this.id,
-      name: this.name,
-      description: this.description,
       drink_of_the_day: this.drinkOfTheDay?.toJSON() || null,
-      full_menu: categoriesJSON,
-      version: this.version,
-      lastUpdated: this.lastUpdated,
-      currency: this.currency,
-      tax: this.tax,
-      serviceCharge: this.serviceCharge
+      full_menu: {
+        menu: (this.menuItems || []).map(item => item.toJSON()),
+        addons: (this.addons || []).map(addon => addon.toJSON())
+      }
     };
   }
 

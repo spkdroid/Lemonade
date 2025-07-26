@@ -7,14 +7,14 @@ export class CheckoutRequest {
       email: order.customerEmail || ''
     };
     
-    this.items = order.items.map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-      selectedSize: item.selectedSize || null,
-      selectedOptions: item.selectedOptions || [],
-      total: item.price * item.quantity
+    this.items = (order.items || []).map(item => ({
+      id: item?.id || 'unknown',
+      name: item?.name || 'Unknown Item',
+      price: item?.price || 0,
+      quantity: item?.quantity || 1,
+      selectedSize: item?.selectedSize || null,
+      selectedOptions: item?.selectedOptions || [],
+      total: (item?.price || 0) * (item?.quantity || 1)
     }));
     
     this.pricing = {

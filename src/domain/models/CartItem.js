@@ -1,17 +1,27 @@
 export class CartItem {
-  constructor(item, quantity = 1, selectedSize = null, selectedOptions = []) {
-    console.log('CartItem constructor called with:', {
-      item: item,
-      quantity: quantity,
-      selectedSize: selectedSize,
-      itemPrice: item.price,
-      itemName: item.name
-    });
+  constructor(item = {}, quantity = 1, selectedSize = null, selectedOptions = []) {
+    if (__DEV__) {
+      console.log('CartItem constructor called with:', {
+        item: item,
+        quantity: quantity,
+        selectedSize: selectedSize,
+        itemPrice: item.price,
+        itemName: item.name
+      });
+    }
     
-    this.id = item.name + (selectedSize || '');
-    this.name = item.name;
-    this.type = item.type;
-    this.image = item.image;
+    // Handle undefined item gracefully
+    if (!item || typeof item !== 'object') {
+      if (__DEV__) {
+        console.error('Invalid item passed to CartItem constructor:', item);
+      }
+      item = { name: 'Unknown Item', price: 0, type: 'unknown' };
+    }
+    
+    this.id = (item.name || 'unknown') + (selectedSize || '');
+    this.name = item.name || 'Unknown Item';
+    this.type = item.type || 'unknown';
+    this.image = item.image || null;
     
     // Handle price calculation more safely
     if (selectedSize && item.price && item.price[selectedSize]) {
@@ -30,6 +40,8 @@ export class CartItem {
     this.selectedOptions = selectedOptions;
     this.baseItem = item; // Reference to original menu item
     
-    console.log('CartItem created:', this);
+    if (__DEV__) {
+      console.log('CartItem created:', this);
+    }
   }
 }

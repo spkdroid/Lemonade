@@ -75,7 +75,7 @@ const CartScreen = ({ navigation }) => {
   const handleRemoveItem = (item) => {
     Alert.alert(
       'Remove Item',
-      `Remove ${item.name} from your cart?`,
+      `Remove ${item?.name || 'this item'} from your cart?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Remove', style: 'destructive', onPress: () => removeFromCart(item.id) },
@@ -186,13 +186,16 @@ const CartScreen = ({ navigation }) => {
 
   const renderCartItem = ({ item }) => (
     <View style={styles.cartItem}>
-      <Image source={{ uri: item.image }} style={styles.cartItemImage} />
+      <Image 
+        source={item.image ? { uri: item.image } : { uri: 'https://via.placeholder.com/80x80/cccccc/666666?text=No+Image' }} 
+        style={styles.cartItemImage} 
+      />
       <View style={styles.cartItemDetails}>
-        <Text style={styles.cartItemName}>{item.name}</Text>
-        {item.selectedSize && (
+        <Text style={styles.cartItemName}>{item?.name || 'Unknown Item'}</Text>
+        {item?.selectedSize && (
           <Text style={styles.cartItemSize}>Size: {item.selectedSize}</Text>
         )}
-        <Text style={styles.cartItemPrice}>${item.price.toFixed(2)} each</Text>
+        <Text style={styles.cartItemPrice}>${(item?.price || 0).toFixed(2)} each</Text>
         
         <View style={styles.quantityControl}>
           <TouchableOpacity 

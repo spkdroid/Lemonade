@@ -1,20 +1,13 @@
 export class MenuItem {
-  constructor(data) {
-    this.id = data.id || data.name;
-    this.name = data.name;
-    this.description = data.description || '';
-    this.image = data.image;
+  constructor(data = {}) {
+    this.id = data.id || data.name || 'unknown-item';
+    this.name = data.name || 'Unknown Item';
     this.type = data.type || 'drink';
-    this.category = data.category || 'beverages';
+    this.description = data.description || '';
+    this.taste = data.taste || '';
     this.price = this.parsePrice(data.price);
-    this.sizes = data.sizes || [];
-    this.options = data.options || [];
-    this.availability = data.availability !== false;
-    this.featured = data.featured || false;
-    this.nutritionInfo = data.nutritionInfo || {};
-    this.allergens = data.allergens || [];
-    this.createdAt = data.createdAt || new Date().toISOString();
-    this.updatedAt = data.updatedAt || new Date().toISOString();
+    this.image = data.image || null;
+    this.options = data.options || []; // For addons like flavor shots
   }
 
   parsePrice(price) {
@@ -32,6 +25,10 @@ export class MenuItem {
   }
 
   getPrice(size = 'default') {
+    // Handle different price structures from API
+    if (size === 'default' && this.price.regular !== undefined) {
+      return this.price.regular;
+    }
     return this.price[size] || this.price.default || 0;
   }
 
@@ -39,31 +36,16 @@ export class MenuItem {
     return Object.keys(this.price).filter(key => key !== 'default');
   }
 
-  isAvailable() {
-    return this.availability;
-  }
-
-  isFeatured() {
-    return this.featured;
-  }
-
   toJSON() {
     return {
       id: this.id,
       name: this.name,
-      description: this.description,
-      image: this.image,
       type: this.type,
-      category: this.category,
+      description: this.description,
+      taste: this.taste,
       price: this.price,
-      sizes: this.sizes,
-      options: this.options,
-      availability: this.availability,
-      featured: this.featured,
-      nutritionInfo: this.nutritionInfo,
-      allergens: this.allergens,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      image: this.image,
+      options: this.options
     };
   }
 

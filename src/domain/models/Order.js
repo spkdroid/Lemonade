@@ -177,15 +177,20 @@ export class Order {
   }
 
   // Create order from cart and delivery info
-  static fromCartAndDelivery(cartItems, deliveryInfo, customerInfo = {}) {
+  static fromCartAndDelivery(cartItems = [], deliveryInfo, customerInfo = {}) {
+    if (!Array.isArray(cartItems)) {
+      console.error('Invalid cartItems passed to Order.fromCartAndDelivery:', cartItems);
+      cartItems = [];
+    }
+    
     const items = cartItems.map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-      selectedSize: item.selectedSize,
-      selectedOptions: item.selectedOptions,
-      image: item.image
+      id: item?.id || 'unknown',
+      name: item?.name || 'Unknown Item',
+      price: item?.price || 0,
+      quantity: item?.quantity || 1,
+      selectedSize: item?.selectedSize || null,
+      selectedOptions: item?.selectedOptions || [],
+      image: item?.image || null
     }));
 
     const order = new Order({
