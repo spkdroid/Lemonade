@@ -293,5 +293,4 @@ This project was developed with the assistance of advanced AI tools and technolo
 
 <div align="center">
   <strong>Built with ❤️ using React Native</strong><br>
-  <em>Powered by AI • Enhanced by Human Creativity</em>
 </div>
