@@ -35,11 +35,51 @@ local.properties
 !debug.keystore
 .kotlin/
 
+# Android specific
+android/app/build/
+android/build/
+android/app/src/main/assets/index.android.bundle
+android/app/src/main/res/drawable-*/
+android/app/src/main/res/raw/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# iOS specific
+ios/build/
+ios/DerivedData/
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/Pods/
+*.ipa
+*.app
+*.dSYM.zip
+*.dSYM
+
+# Build outputs
+*.apk
+*.aab
+*.ipa
+build/
+dist/
+out/
+
+# Development tools and config
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.eslintcache
+
 # node.js
 #
 node_modules/
 npm-debug.log
 yarn-error.log
+package-lock.json
 
 # fastlane
 #
@@ -59,6 +99,7 @@ yarn-error.log
 # Ruby / CocoaPods
 **/Pods/
 /vendor/bundle/
+Gemfile.lock
 
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
@@ -73,3 +114,30 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Build and log files
+*.log
+*.tmp
+*.temp
+*.cache
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# TypeScript (if added later)
+*.tsbuildinfo
+
+# Debugging and profiling
+.nyc_output/
+*.lcov
+flipper-*
