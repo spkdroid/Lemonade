@@ -6,10 +6,12 @@ import {
   FlatList, 
   TouchableOpacity, 
   Image,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useCartViewModel } from '../viewModels/useCartViewModel';
 import { useDeliveryViewModel } from '../viewModels/useDeliveryViewModel';
+import { useCheckoutViewModel } from '../viewModels/useCheckoutViewModel';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import DeliveryCard from '../components/DeliveryCard';
 import DeliveryEditModal from '../components/DeliveryEditModal';
@@ -39,6 +41,14 @@ const CartScreen = ({ navigation }) => {
     hasDeliveryInfo
   } = useDeliveryViewModel();
 
+  const {
+    processCheckout,
+    loading: checkoutLoading,
+    error: checkoutError,
+    lastOrder,
+    clearError: clearCheckoutError
+  } = useCheckoutViewModel();
+
   const [isDeliveryModalVisible, setIsDeliveryModalVisible] = useState(false);
 
   const handleEditDeliveryInfo = () => {
@@ -65,7 +75,7 @@ const CartScreen = ({ navigation }) => {
   const handleRemoveItem = (item) => {
     Alert.alert(
       'Remove Item',
-      `Remove ${item.name} from your cart?`,
+      `Remove ${item?.name || 'this item'} from your cart?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Remove', style: 'destructive', onPress: () => removeFromCart(item.id) },
@@ -81,7 +91,16 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    // Clear any previous checkout errors
+    clearCheckoutError();
+    
+    // Check if cart is empty
+    if (!cartItems || cartItems.length === 0) {
+      Alert.alert('Empty Cart', 'Please add items to your cart before checkout.');
+      return;
+    }
+
     // Check if delivery info is complete before proceeding
     if (!hasDeliveryInfo()) {
       Alert.alert(
@@ -95,30 +114,88 @@ const CartScreen = ({ navigation }) => {
       return;
     }
 
+    // Show confirmation dialog
     Alert.alert(
       'Confirm Order',
       `Total: $${getTotal().toFixed(2)}\n\nDeliver to:\n${deliveryInfo.getDisplayName()}\n${deliveryInfo.getFormattedAddress()}\n\nProceed to checkout?`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Confirm', onPress: () => {
-          // Implement your checkout logic here
-          clearCart();
-          navigation.goBack();
-          alert('Order placed successfully!');
-        }},
+        { 
+          text: 'Confirm', 
+          onPress: async () => {
+            try {
+              // Extract customer info from delivery info
+              const customerInfo = {
+                name: deliveryInfo.name || deliveryInfo.getDisplayName(),
+                phone: deliveryInfo.phoneNumber || '',
+                email: deliveryInfo.email || ''
+              };
+
+              console.log('Processing checkout with customer info:', customerInfo);
+
+              // Process checkout
+              const response = await processCheckout(cartItems, deliveryInfo, customerInfo);
+              
+              if (response.isSuccess()) {
+                const { order, checkoutResponse } = response.getData();
+                
+                // Clear cart on successful checkout
+                await clearCart();
+                
+                // Show success message with order number
+                Alert.alert(
+                  'Order Placed Successfully!',
+                  `Order Number: ${checkoutResponse.orderNumber}\n\nThank you for your order! You will receive a confirmation shortly.`,
+                  [
+                    { 
+                      text: 'OK', 
+                      onPress: () => {
+                        // Navigate back to home screen
+                        navigation.navigate('Home');
+                      }
+                    }
+                  ]
+                );
+              } else {
+                // Show error message
+                Alert.alert(
+                  'Checkout Failed',
+                  response.getMessage() || 'Unable to process your order. Please try again.',
+                  [
+                    { text: 'Retry', onPress: handleCheckout },
+                    { text: 'Cancel', style: 'cancel' }
+                  ]
+                );
+              }
+            } catch (error) {
+              console.error('Checkout error:', error);
+              Alert.alert(
+                'Checkout Error',
+                'An unexpected error occurred. Please try again.',
+                [
+                  { text: 'Retry', onPress: handleCheckout },
+                  { text: 'Cancel', style: 'cancel' }
+                ]
+              );
+            }
+          }
+        }
       ]
     );
   };
 
   const renderCartItem = ({ item }) => (
     <View style={styles.cartItem}>
-      <Image source={{ uri: item.image }} style={styles.cartItemImage} />
+      <Image 
+        source={item.image ? { uri: item.image } : { uri: 'https://via.placeholder.com/80x80/cccccc/666666?text=No+Image' }} 
+        style={styles.cartItemImage} 
+      />
       <View style={styles.cartItemDetails}>
-        <Text style={styles.cartItemName}>{item.name}</Text>
-        {item.selectedSize && (
+        <Text style={styles.cartItemName}>{item?.name || 'Unknown Item'}</Text>
+        {item?.selectedSize && (
           <Text style={styles.cartItemSize}>Size: {item.selectedSize}</Text>
         )}
-        <Text style={styles.cartItemPrice}>${item.price.toFixed(2)} each</Text>
+        <Text style={styles.cartItemPrice}>${(item?.price || 0).toFixed(2)} each</Text>
         
         <View style={styles.quantityControl}>
           <TouchableOpacity 
@@ -218,12 +295,25 @@ const CartScreen = ({ navigation }) => {
           <View style={styles.totalContainer}>
             <Text style={styles.totalText}>Total: ${getTotal().toFixed(2)}</Text>
             <TouchableOpacity 
-              style={styles.checkoutButton}
+              style={[
+                styles.checkoutButton,
+                (checkoutLoading || loading) && styles.checkoutButtonDisabled
+              ]}
               onPress={handleCheckout}
+              disabled={checkoutLoading || loading}
               activeOpacity={0.8}
             >
-              <MaterialIcons name="payment" size={20} color="#FFF" style={styles.buttonIcon} />
-              <Text style={styles.checkoutButtonText}>Checkout</Text>
+              {checkoutLoading ? (
+                <>
+                  <ActivityIndicator size="small" color="#FFF" style={styles.buttonIcon} />
+                  <Text style={styles.checkoutButtonText}>Processing...</Text>
+                </>
+              ) : (
+                <>
+                  <MaterialIcons name="payment" size={20} color="#FFF" style={styles.buttonIcon} />
+                  <Text style={styles.checkoutButtonText}>Checkout</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -451,6 +541,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
+  },
+  checkoutButtonDisabled: {
+    backgroundColor: '#ccc',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   checkoutButtonText: {
     color: '#FFF',

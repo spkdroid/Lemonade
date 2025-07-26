@@ -18,7 +18,24 @@ export class DeliveryInfo {
     return this.name.trim() !== '' && 
            this.phoneNumber.trim() !== '' && 
            this.email.trim() !== '' && 
-           this.address.trim() !== '';
+           this.address.trim() !== '' &&
+           this.isValidPhoneNumber();
+  }
+
+  isValidPhoneNumber() {
+    if (!this.phoneNumber || this.phoneNumber.trim() === '') {
+      return false;
+    }
+    // Basic phone number validation - allows international format
+    const phoneRegex = /^[\+]?[1-9]?[\d\s\-\(\)]{7,15}$/;
+    const cleanPhone = this.phoneNumber.replace(/\s/g, '');
+    return phoneRegex.test(cleanPhone);
+  }
+
+  getFormattedPhoneNumber() {
+    if (!this.phoneNumber) return '';
+    // Remove all non-digit characters except +
+    return this.phoneNumber.replace(/[^\d+]/g, '');
   }
 
   // Get formatted address
