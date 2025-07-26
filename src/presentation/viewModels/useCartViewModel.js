@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
-import { CartRepository } from '../services/CartRepository';
+import { CartRepository } from '../../data/repositories/CartRepository';
 
+/**
+ * Cart ViewModel
+ * Manages cart state and business logic using MVVM pattern
+ */
 export const useCartViewModel = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);

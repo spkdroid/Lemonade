@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MenuRepository } from '../services/MenuRepository';
+import { MenuRepository } from '../../data/repositories/MenuRepository';
 
 export const useMenuViewModel = () => {
   const [menuData, setMenuData] = useState(null);

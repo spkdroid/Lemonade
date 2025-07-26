@@ -1,5 +1,5 @@
-import { MenuApiService } from './api/MenuApiService';
-import { StorageService } from './storage/StorageService';
+import { MenuApiService } from '../datasources/remote/MenuApiService';
+import { StorageService } from '../../infrastructure/storage/StorageService';
 
 export class MenuRepository {
   static async getMenu() {
