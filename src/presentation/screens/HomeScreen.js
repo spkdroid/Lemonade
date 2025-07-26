@@ -34,7 +34,26 @@ const HomeScreen = () => {
     console.log('HomeScreen rendering...');
   }
   
-  const { menuData, loading, error, refresh } = useMenuViewModel();
+  const { 
+    menuData, 
+    filteredItems,
+    loading, 
+    error, 
+    refresh,
+    searchMenuItems,
+    filterByCategory,
+    clearSearch,
+    validateItemForOrder,
+    getFeaturedDrink,
+    getMenuCategories,
+    hasMenuItems,
+    hasAddons,
+    hasFeaturedDrink,
+    availableCategories,
+    isSearchActive,
+    selectedCategory
+  } = useMenuViewModel();
+  
   if (__DEV__) {
     console.log('useMenuViewModel executed successfully');
   }
@@ -74,8 +93,16 @@ const HomeScreen = () => {
   });
 
   const openItemDetails = (item) => {
+    // Validate item before opening details
+    const validation = validateItemForOrder(item);
+    
+    if (!validation.isValid) {
+      alert(`Cannot view item details: ${validation.errors.join(', ')}`);
+      return;
+    }
+    
     setSelectedItem(item);
-    setSelectedSize(Object.keys(item.price)[0]); // Set default size
+    setSelectedSize(item.price ? Object.keys(item.price)[0] : null); // Set default size
     setModalVisible(true);
   };
 
@@ -88,13 +115,23 @@ const HomeScreen = () => {
   const handleAddToCart = async () => {
     if (!selectedItem) return;
     
+    // Validate item before adding to cart
+    const validation = validateItemForOrder(selectedItem);
+    
+    if (!validation.isValid) {
+      alert(`Cannot add to cart: ${validation.errors.join(', ')}`);
+      return;
+    }
+    
     try {
-      console.log('Adding to cart:', {
-        item: selectedItem,
-        selectedSize: selectedSize,
-        hasPrice: selectedItem?.price,
-        hasName: selectedItem?.name
-      });
+      if (__DEV__) {
+        console.log('Adding to cart:', {
+          item: selectedItem,
+          selectedSize: selectedSize,
+          hasPrice: selectedItem?.price,
+          hasName: selectedItem?.name
+        });
+      }
       
       await addToCart(selectedItem, 1, selectedSize);
       alert(`${selectedItem?.name || 'Item'} added to cart!`);
@@ -162,7 +199,7 @@ const HomeScreen = () => {
     );
   }
 
-  if (!menuData || (!menuData.menuItems?.length && !menuData.drinkOfTheDay && !menuData.addons?.length)) {
+  if (!menuData || (!hasMenuItems && !hasFeaturedDrink && !hasAddons)) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>No menu items available</Text>
@@ -173,7 +210,7 @@ const HomeScreen = () => {
     );
   }
 
-  const drinkOfTheDay = menuData.drinkOfTheDay;
+  const drinkOfTheDay = getFeaturedDrink();
 
   return (
     <View style={styles.container}>
@@ -277,13 +314,35 @@ const HomeScreen = () => {
         {/* Menu Grid - padding to account for header */}
         <View style={[styles.menuContainer, { paddingTop: HEADER_MAX_HEIGHT + 20 }]}>
           <Text style={styles.sectionTitle}>OUR MENU</Text>
+          
+          {/* Display search/filter info if active */}
+          {(isSearchActive || selectedCategory !== 'all') && (
+            <View style={styles.filterInfo}>
+              <Text style={styles.filterInfoText}>
+                Showing {filteredItems.length} items
+                {isSearchActive && ` for "${searchTerm}"`}
+                {selectedCategory !== 'all' && ` in ${selectedCategory}`}
+              </Text>
+              <TouchableOpacity onPress={clearSearch} style={styles.clearFilterButton}>
+                <Text style={styles.clearFilterText}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          
           <FlatList
-            data={menuData?.menuItems || []}
+            data={filteredItems}
             renderItem={renderMenuItem}
             keyExtractor={(item, index) => item?.name || `item-${index}`}
             numColumns={2}
             columnWrapperStyle={styles.menuRow}
             scrollEnabled={false}
+            ListEmptyComponent={() => (
+              <View style={styles.emptyMenuContainer}>
+                <Text style={styles.emptyMenuText}>
+                  {isSearchActive ? 'No items found for your search' : 'No menu items available'}
+                </Text>
+              </View>
+            )}
           />
         </View>
 
@@ -980,6 +1039,44 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 11,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  filterInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#FFF3E0',
+    marginHorizontal: 20,
+    marginBottom: 10,
+    borderRadius: 8,
+  },
+  filterInfoText: {
+    fontSize: 14,
+    color: '#FF8C00',
+    fontWeight: '500',
+  },
+  clearFilterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#FF8C00',
+    borderRadius: 15,
+  },
+  clearFilterText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  emptyMenuContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyMenuText: {
+    fontSize: 16,
+    color: '#999',
     textAlign: 'center',
   },
 });
