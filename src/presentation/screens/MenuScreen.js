@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { useMenuViewModel } from '../viewModels/useMenuViewModel';
 import { useCartViewModel } from '../viewModels/useCartViewModel';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -47,8 +47,22 @@ const MenuScreen = () => {
     searchTerm
   } = useMenuViewModel();
   
-  const { cartItems, addToCart } = useCartViewModel();
+  const { cartItems, addToCart, refreshCart } = useCartViewModel();
   const navigation = useNavigation();
+  
+  // Refresh cart when screen comes into focus (e.g., after completing a purchase)
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('MenuScreen: Screen focused, refreshing cart');
+      console.log('MenuScreen: Current cart items before refresh:', cartItems.length);
+      refreshCart();
+    }, [refreshCart])
+  );
+
+  // Add effect to log cart changes
+  React.useEffect(() => {
+    console.log('MenuScreen: Cart items changed, new count:', cartItems.length);
+  }, [cartItems]);
   
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);

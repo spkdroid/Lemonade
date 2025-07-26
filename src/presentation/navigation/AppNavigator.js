@@ -16,6 +16,11 @@ function AppNavigator() {
         options={{ headerShown: false }} 
       />
       <Stack.Screen 
+        name="Menu" 
+        component={MenuScreen} 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
         name="Cart" 
         component={CartScreen} 
         options={{ title: 'Your Cart' }} 

@@ -199,8 +199,10 @@ const CartScreen = ({ navigation }) => {
         // Close checkout modal first
         setIsCheckoutModalVisible(false);
         
-        // Clear cart immediately
+        // Clear cart immediately and log the result
+        console.log('CartScreen: About to clear cart, current items:', cartItems.length);
         await clearCart();
+        console.log('CartScreen: Cart cleared, should now be empty');
         
         // Show receipt modal immediately after clearing cart
         showOrderReceipt(orderData);
@@ -314,7 +316,8 @@ const CartScreen = ({ navigation }) => {
         onGoToHome={() => {
           console.log('OrderReceiptModal: onGoToHome called');
           setOrderReceiptModal({ visible: false, orderData: null });
-          navigation.navigate('Home');
+          // Go back to the previous screen (MenuScreen) in the navigation stack
+          navigation.goBack();
         }}
       />
 
