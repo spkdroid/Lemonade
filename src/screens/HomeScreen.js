@@ -1,17 +1,52 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, FlatList, TouchableOpacity, Modal, Dimensions } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Image, 
+  ScrollView, 
+  FlatList, 
+  TouchableOpacity, 
+  Modal, 
+  Dimensions,
+  Animated,
+  StatusBar
+} from 'react-native';
 import { useMenuViewModel } from '../viewModels/useMenuViewModel';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const { width } = Dimensions.get('window');
-const itemWidth = (width - 40) / 2; // 2 columns with 20 padding
+const itemWidth = (width - 40) / 2;
+const HEADER_MAX_HEIGHT = 250;
+const HEADER_MIN_HEIGHT = 80;
+const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
 const HomeScreen = () => {
   const { menuData, loading, error, refresh } = useMenuViewModel();
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE],
+    outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
+    extrapolate: 'clamp',
+  });
+
+  const featuredOpacity = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
+    outputRange: [1, 0.5, 0],
+    extrapolate: 'clamp',
+  });
+
+  const featuredTranslateY = scrollY.interpolate({
+    inputRange: [0, HEADER_SCROLL_DISTANCE],
+    outputRange: [0, -50],
+    extrapolate: 'clamp',
+  });
 
   const openItemDetails = (item) => {
     setSelectedItem(item);
@@ -73,68 +108,86 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+      <StatusBar barStyle="light-content" />
+      
+      {/* Animated Header */}
+      <Animated.View style={[styles.header, { height: headerHeight }]}>
         <Text style={styles.headerTitle}>ORANGE LEMONADE</Text>
         <Text style={styles.headerSubtitle}>Fresh & Natural Drinks</Text>
-      </View>
-
-      {/* Featured Drink */}
-      <View style={styles.featuredContainer}>
-        <Text style={styles.sectionTitle}>DRINK OF THE DAY</Text>
-        <TouchableOpacity 
-          style={styles.featuredItem}
-          onPress={() => openItemDetails(drinkOfTheDay)}
-        >
-          <Image source={{ uri: drinkOfTheDay.image }} style={styles.featuredImage} />
-          <View style={styles.featuredContent}>
-            <Text style={styles.featuredName}>{drinkOfTheDay.name}</Text>
-            <Text style={styles.featuredDescription} numberOfLines={2}>
-              {drinkOfTheDay.description}
-            </Text>
-            <View style={styles.featuredPrice}>
-              <FontAwesome name="tags" size={16} color="#FF6B6B" />
-              <Text style={styles.featuredPriceText}>
-                ${Object.values(drinkOfTheDay.price)[0]}
+        
+        {/* Featured Drink - will minimize on scroll */}
+        <Animated.View style={[
+          styles.featuredContainer, 
+          {
+            opacity: featuredOpacity,
+            transform: [{ translateY: featuredTranslateY }]
+          }
+        ]}>
+          <Text style={styles.sectionTitle}>DRINK OF THE DAY</Text>
+          <TouchableOpacity 
+            style={styles.featuredItem}
+            onPress={() => openItemDetails(drinkOfTheDay)}
+          >
+            <Image source={{ uri: drinkOfTheDay.image }} style={styles.featuredImage} />
+            <View style={styles.featuredContent}>
+              <Text style={styles.featuredName}>{drinkOfTheDay.name}</Text>
+              <Text style={styles.featuredDescription} numberOfLines={2}>
+                {drinkOfTheDay.description}
               </Text>
+              <View style={styles.featuredPrice}>
+                <FontAwesome name="tags" size={16} color="#FF6B6B" />
+                <Text style={styles.featuredPriceText}>
+                  ${Object.values(drinkOfTheDay.price)[0]}
+                </Text>
+              </View>
             </View>
-          </View>
-        </TouchableOpacity>
-      </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
 
-      {/* Menu Grid */}
-      <View style={styles.menuContainer}>
-        <Text style={styles.sectionTitle}>OUR MENU</Text>
-        <FlatList
-          data={fullMenu.menu}
-          renderItem={renderMenuItem}
-          keyExtractor={(item) => item.name}
-          numColumns={2}
-          columnWrapperStyle={styles.menuRow}
-          contentContainerStyle={styles.menuList}
-        />
-      </View>
+      {/* Scrollable Content */}
+      <Animated.ScrollView
+        contentContainerStyle={styles.scrollContent}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+      >
+        {/* Menu Grid - padding to account for header */}
+        <View style={[styles.menuContainer, { paddingTop: HEADER_MAX_HEIGHT + 20 }]}>
+          <Text style={styles.sectionTitle}>OUR MENU</Text>
+          <FlatList
+            data={fullMenu.menu}
+            renderItem={renderMenuItem}
+            keyExtractor={(item) => item.name}
+            numColumns={2}
+            columnWrapperStyle={styles.menuRow}
+            scrollEnabled={false}
+          />
+        </View>
 
-      {/* Addons Section */}
-      <View style={styles.addonsContainer}>
-        <Text style={styles.sectionTitle}>ADD-ONS</Text>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.addonsList}
-        >
-          {fullMenu.addons.map((addon) => (
-            <TouchableOpacity 
-              key={addon.name} 
-              style={styles.addonItem}
-              onPress={() => openItemDetails(addon)}
-            >
-              <Text style={styles.addonName}>{addon.name}</Text>
-              <Text style={styles.addonPrice}>${addon.price}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+        {/* Addons Section */}
+        <View style={styles.addonsContainer}>
+          <Text style={styles.sectionTitle}>ADD-ONS</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.addonsList}
+          >
+            {fullMenu.addons.map((addon) => (
+              <TouchableOpacity 
+                key={addon.name} 
+                style={styles.addonItem}
+                onPress={() => openItemDetails(addon)}
+              >
+                <Text style={styles.addonName}>{addon.name}</Text>
+                <Text style={styles.addonPrice}>${addon.price}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </Animated.ScrollView>
 
       {/* Item Detail Modal */}
       <Modal
