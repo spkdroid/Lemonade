@@ -9,7 +9,10 @@ import {
   Alert
 } from 'react-native';
 import { useCartViewModel } from '../viewModels/useCartViewModel';
+import { useDeliveryViewModel } from '../viewModels/useDeliveryViewModel';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import DeliveryCard from '../components/DeliveryCard';
+import DeliveryEditModal from '../components/DeliveryEditModal';
 
 // Import custom icons
 const addIcon = require('../assets/add_icon.png');
@@ -26,6 +29,38 @@ const CartScreen = ({ navigation }) => {
     clearCart,
     getTotal 
   } = useCartViewModel();
+
+  const {
+    deliveryInfo,
+    loading: deliveryLoading,
+    error: deliveryError,
+    validationErrors,
+    saveDeliveryInfo,
+    hasDeliveryInfo
+  } = useDeliveryViewModel();
+
+  const [isDeliveryModalVisible, setIsDeliveryModalVisible] = useState(false);
+
+  const handleEditDeliveryInfo = () => {
+    setIsDeliveryModalVisible(true);
+  };
+
+  const handleSaveDeliveryInfo = async (newDeliveryInfo) => {
+    try {
+      console.log('Saving delivery info:', newDeliveryInfo);
+      await saveDeliveryInfo(newDeliveryInfo);
+      console.log('Delivery info saved successfully');
+      setIsDeliveryModalVisible(false);
+    } catch (error) {
+      console.log('Error saving delivery info:', error);
+      // Error handling is done in the view model
+      // The modal will stay open and show validation errors
+    }
+  };
+
+  const handleCloseDeliveryModal = () => {
+    setIsDeliveryModalVisible(false);
+  };
 
   const handleRemoveItem = (item) => {
     Alert.alert(
@@ -47,9 +82,22 @@ const CartScreen = ({ navigation }) => {
   };
 
   const handleCheckout = () => {
+    // Check if delivery info is complete before proceeding
+    if (!hasDeliveryInfo()) {
+      Alert.alert(
+        'Delivery Information Required',
+        'Please add your delivery information before proceeding to checkout.',
+        [
+          { text: 'Add Info', onPress: () => setIsDeliveryModalVisible(true) },
+          { text: 'Cancel', style: 'cancel' }
+        ]
+      );
+      return;
+    }
+
     Alert.alert(
       'Confirm Order',
-      `Total: $${getTotal().toFixed(2)}\nProceed to checkout?`,
+      `Total: $${getTotal().toFixed(2)}\n\nDeliver to:\n${deliveryInfo.getDisplayName()}\n${deliveryInfo.getFormattedAddress()}\n\nProceed to checkout?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Confirm', onPress: () => {
@@ -158,6 +206,15 @@ const CartScreen = ({ navigation }) => {
             contentContainerStyle={styles.cartList}
           />
           
+          {/* Delivery Information Section */}
+          <View style={styles.deliverySection}>
+            <DeliveryCard 
+              deliveryInfo={deliveryInfo}
+              hasDeliveryInfo={hasDeliveryInfo()}
+              onEdit={handleEditDeliveryInfo}
+            />
+          </View>
+          
           <View style={styles.totalContainer}>
             <Text style={styles.totalText}>Total: ${getTotal().toFixed(2)}</Text>
             <TouchableOpacity 
@@ -169,6 +226,16 @@ const CartScreen = ({ navigation }) => {
               <Text style={styles.checkoutButtonText}>Checkout</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Delivery Edit Modal */}
+          <DeliveryEditModal 
+            visible={isDeliveryModalVisible}
+            onClose={handleCloseDeliveryModal}
+            deliveryInfo={deliveryInfo}
+            onSave={handleSaveDeliveryInfo}
+            loading={deliveryLoading}
+            validationErrors={validationErrors}
+          />
         </>
       )}
     </View>
@@ -352,6 +419,12 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
+  },
+  deliverySection: {
+    padding: 15,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
   },
   totalContainer: {
     padding: 20,

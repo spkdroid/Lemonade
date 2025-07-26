@@ -174,25 +174,58 @@ const HomeScreen = () => {
             transform: [{ translateY: featuredTranslateY }]
           }
         ]}>
-          <Text style={styles.sectionTitle}>DRINK OF THE DAY</Text>
-          <TouchableOpacity 
-            style={styles.featuredItem}
-            onPress={() => openItemDetails(drinkOfTheDay)}
-          >
-            <Image source={{ uri: drinkOfTheDay.image }} style={styles.featuredImage} />
-            <View style={styles.featuredContent}>
-              <Text style={styles.featuredName}>{drinkOfTheDay.name}</Text>
-              <Text style={styles.featuredDescription} numberOfLines={2}>
-                {drinkOfTheDay.description}
-              </Text>
-              <View style={styles.featuredPrice}>
-                <FontAwesome name="tags" size={16} color="#FF6B6B" />
-                <Text style={styles.featuredPriceText}>
-                  ${Object.values(drinkOfTheDay.price)[0]}
-                </Text>
+          <View style={styles.materialCard}>
+            <View style={styles.cardHeader}>
+              <View style={styles.titleContainer}>
+                <MaterialIcons name="local-cafe" size={24} color="#FF6B6B" />
+                <Text style={styles.sectionTitle}>DRINK OF THE DAY</Text>
+              </View>
+              <View style={styles.specialBadge}>
+                <Text style={styles.specialBadgeText}>SPECIAL</Text>
               </View>
             </View>
-          </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.featuredItem}
+              onPress={() => openItemDetails(drinkOfTheDay)}
+              activeOpacity={0.95}
+            >
+              <View style={styles.imageContainer}>
+                <Image source={{ uri: drinkOfTheDay.image }} style={styles.featuredImage} />
+                <View style={styles.imageOverlay}>
+                  <Text style={styles.tapToViewText}>Tap to view</Text>
+                </View>
+              </View>
+              
+              <View style={styles.featuredContent}>
+                <View style={styles.drinkHeader}>
+                  <Text style={styles.featuredName}>{drinkOfTheDay.name}</Text>
+                  <View style={styles.ratingContainer}>
+                    <MaterialIcons name="star" size={16} color="#FFD700" />
+                    <Text style={styles.ratingText}>4.8</Text>
+                  </View>
+                </View>
+                
+                <Text style={styles.featuredDescription} numberOfLines={2}>
+                  {drinkOfTheDay.description}
+                </Text>
+                
+                <View style={styles.priceAndAction}>
+                  <View style={styles.featuredPrice}>
+                    <Text style={styles.priceLabel}>Starting from</Text>
+                    <Text style={styles.featuredPriceText}>
+                      ${Object.values(drinkOfTheDay.price)[0]}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.actionButton}>
+                    <MaterialIcons name="add-shopping-cart" size={20} color="#FFF" />
+                    <Text style={styles.actionButtonText}>Order Now</Text>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </Animated.View>
 
@@ -451,55 +484,165 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
+  materialCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#F5F5F5',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingBottom: 15,
+    backgroundColor: '#FAFAFA',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  specialBadge: {
+    backgroundColor: '#FF6B6B',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  specialBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+  },
   scrollContent: {
     paddingBottom: 30,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 15,
-    letterSpacing: 1,
+    marginLeft: 8,
+    letterSpacing: 0.5,
   },
   featuredItem: {
     backgroundColor: '#FFF',
-    borderRadius: 15,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
     width: '100%',
+  },
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 200,
   },
   featuredImage: {
     width: '100%',
-    height: 180,
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  tapToViewText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '600',
   },
   featuredContent: {
-    padding: 15,
+    padding: 20,
+  },
+  drinkHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
   },
   featuredName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
+    flex: 1,
+    marginRight: 10,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF9E6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FFE082',
+  },
+  ratingText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#FF8F00',
+    marginLeft: 2,
   },
   featuredDescription: {
     fontSize: 14,
     color: '#666',
-    marginTop: 8,
     lineHeight: 20,
+    marginBottom: 16,
+  },
+  priceAndAction: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   featuredPrice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 12,
+    flex: 1,
+  },
+  priceLabel: {
+    fontSize: 12,
+    color: '#999',
+    marginBottom: 2,
   },
   featuredPriceText: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#FF6B6B',
-    marginLeft: 8,
+  },
+  actionButton: {
+    backgroundColor: '#FF6B6B',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 25,
+    shadowColor: '#FF6B6B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  actionButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft: 6,
   },
   menuContainer: {
     paddingHorizontal: 15,
