@@ -41,23 +41,6 @@ const CartScreen = ({ navigation }) => {
     hasDeliveryInfo
   } = useDeliveryViewModel();
 
-  // Mock checkout functions for testing
-  const processCheckout = async (cartItems, deliveryInfo, customerInfo) => {
-    console.log('Mock checkout called with:', { cartItems: cartItems.length, deliveryInfo, customerInfo });
-    // Return a mock successful response
-    return {
-      isSuccess: () => true,
-      getData: () => ({
-        order: { id: 'test-order' },
-        checkoutResponse: { orderNumber: 'ORD-TEST-12345' }
-      })
-    };
-  };
-  
-  const checkoutLoading = false;
-  const clearCheckoutError = () => {};
-
-  /*
   const {
     processCheckout,
     loading: checkoutLoading,
@@ -65,7 +48,6 @@ const CartScreen = ({ navigation }) => {
     lastOrder,
     clearError: clearCheckoutError
   } = useCheckoutViewModel();
-  */
 
   const [isDeliveryModalVisible, setIsDeliveryModalVisible] = useState(false);
 

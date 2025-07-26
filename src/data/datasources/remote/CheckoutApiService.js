@@ -69,49 +69,4 @@ export class CheckoutApiService {
       );
     }
   }
-
-  static async getOrderStatus(orderNumber) {
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/order-status.php`,
-        {
-          params: { order_number: orderNumber },
-          timeout: TIMEOUT,
-          headers: {
-            'Accept': 'application/json'
-          }
-        }
-      );
-      
-      return ApiResponse.success(response.data, 'Order status retrieved');
-    } catch (error) {
-      console.error('Order status API error:', error);
-      return ApiResponse.error('Failed to get order status', 500);
-    }
-  }
-
-  static async cancelOrder(orderNumber, reason = '') {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/cancel-order.php`,
-        {
-          order_number: orderNumber,
-          reason: reason,
-          timestamp: new Date().toISOString()
-        },
-        {
-          timeout: TIMEOUT,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      return ApiResponse.success(response.data, 'Order cancellation processed');
-    } catch (error) {
-      console.error('Cancel order API error:', error);
-      return ApiResponse.error('Failed to cancel order', 500);
-    }
-  }
 }
