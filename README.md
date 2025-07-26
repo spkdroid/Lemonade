@@ -261,16 +261,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## �‍💻 Author
+## ‍💻 Author
 
 **Ramkumar Velmurugan**
 - 📧 Email: [vrk1990@outlook.com](mailto:vrk1990@outlook.com)
 - 🌐 Website: [https://www.spkdroid.com](https://www.spkdroid.com)
-- 💼 Mobile App Developer & Tech Enthusiast
 
-*Passionate about creating innovative mobile experiences and leveraging cutting-edge technologies to build user-centric applications.*
-
-## �🙏 Acknowledgments
+## 🙏 Acknowledgments
 
 This project was developed with the assistance of advanced AI tools and technologies:
 
@@ -285,11 +282,6 @@ This project was developed with the assistance of advanced AI tools and technolo
   - Architecture planning and design patterns
   - Code review and optimization suggestions
   - Documentation and technical writing assistance
-
-- **[DeepSeek](https://www.deepseek.com/)** 🔍
-  - Advanced code analysis and debugging
-  - Performance optimization insights
-  - Complex problem-solving guidance
 
 ### Special Thanks
 
