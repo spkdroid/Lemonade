@@ -24,7 +24,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const { width, height } = Dimensions.get('window');
 
-const HomeScreen = () => {
+const MenuScreen = () => {
   const { 
     menuData, 
     filteredItems,
@@ -947,4 +947,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default MenuScreen;
