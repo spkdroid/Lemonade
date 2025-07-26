@@ -21,6 +21,7 @@ import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AddToCartModal from '../components/AddToCartModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -53,6 +54,8 @@ const MenuScreen = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [addToCartModalVisible, setAddToCartModalVisible] = useState(false);
+  const [addedItem, setAddedItem] = useState(null);
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -134,8 +137,15 @@ const MenuScreen = () => {
     
     try {
       await addToCart(selectedItem, 1, selectedSize);
-      alert(`${selectedItem?.name || 'Item'} added to cart!`);
+      
+      // Set the added item and show the custom modal
+      setAddedItem({
+        ...selectedItem,
+        selectedSize: selectedSize,
+        quantity: 1
+      });
       closeItemDetails();
+      setAddToCartModalVisible(true);
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add item to cart: ' + error.message);
@@ -468,6 +478,16 @@ const MenuScreen = () => {
       </Animated.ScrollView>
       
       {renderItemModal()}
+      
+      <AddToCartModal
+        visible={addToCartModalVisible}
+        onClose={() => setAddToCartModalVisible(false)}
+        item={addedItem}
+        onViewCart={() => {
+          setAddToCartModalVisible(false);
+          navigation.navigate('Cart');
+        }}
+      />
     </SafeAreaView>
   );
 };

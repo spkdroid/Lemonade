@@ -65,7 +65,11 @@ export const useCartViewModel = () => {
   };
 
   const getTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cartItems.reduce((total, item) => {
+      const price = typeof item.price === 'number' ? item.price : 0;
+      const quantity = typeof item.quantity === 'number' ? item.quantity : 1;
+      return total + (price * quantity);
+    }, 0);
   };
 
   useEffect(() => {
