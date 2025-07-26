@@ -314,7 +314,7 @@ const CartScreen = ({ navigation }) => {
         onGoToHome={() => {
           console.log('OrderReceiptModal: onGoToHome called');
           setOrderReceiptModal({ visible: false, orderData: null });
-          navigation.navigate('Home');
+          navigation.goBack();
         }}
       />
 

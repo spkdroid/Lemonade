@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { useMenuViewModel } from '../viewModels/useMenuViewModel';
 import { useCartViewModel } from '../viewModels/useCartViewModel';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -47,8 +47,14 @@ const MenuScreen = () => {
     searchTerm
   } = useMenuViewModel();
   
-  const { cartItems, addToCart } = useCartViewModel();
+  const { cartItems, addToCart, refreshCart } = useCartViewModel();
   const navigation = useNavigation();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refreshCart();
+    }, [refreshCart])
+  );
   
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
