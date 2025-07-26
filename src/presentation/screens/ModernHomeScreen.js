@@ -208,7 +208,7 @@ const HomeScreen = () => {
             All
           </Text>
         </TouchableOpacity>
-        {availableCategories.map((category) => (
+        {(availableCategories || []).map((category) => (
           <TouchableOpacity 
             key={category}
             style={[

@@ -28,23 +28,76 @@ export class Menu {
   }
 
   parseMenuItems(menuArray) {
-    return Array.isArray(menuArray) ? 
-      menuArray.filter(item => item && typeof item === 'object').map(item => new MenuItem(item)) : [];
+    try {
+      if (!Array.isArray(menuArray)) {
+        if (__DEV__) {
+          console.log('Menu.parseMenuItems: Input is not an array:', typeof menuArray);
+        }
+        return [];
+      }
+      
+      const items = menuArray
+        .filter(item => item && typeof item === 'object')
+        .map(item => new MenuItem(item));
+        
+      if (__DEV__) {
+        console.log('Menu.parseMenuItems: Parsed', items.length, 'menu items');
+      }
+      
+      return items;
+    } catch (error) {
+      if (__DEV__) {
+        console.error('Error in Menu.parseMenuItems:', error);
+      }
+      return [];
+    }
   }
 
   parseAddons(addonsArray) {
-    return Array.isArray(addonsArray) ? 
-      addonsArray.filter(addon => addon && typeof addon === 'object').map(addon => new MenuItem(addon)) : [];
+    try {
+      if (!Array.isArray(addonsArray)) {
+        if (__DEV__) {
+          console.log('Menu.parseAddons: Input is not an array:', typeof addonsArray);
+        }
+        return [];
+      }
+      
+      const addons = addonsArray
+        .filter(addon => addon && typeof addon === 'object')
+        .map(addon => new MenuItem(addon));
+        
+      if (__DEV__) {
+        console.log('Menu.parseAddons: Parsed', addons.length, 'addons');
+      }
+      
+      return addons;
+    } catch (error) {
+      if (__DEV__) {
+        console.error('Error in Menu.parseAddons:', error);
+      }
+      return [];
+    }
   }
 
   getAllItems() {
-    const allItems = [...this.menuItems];
-    
-    if (this.drinkOfTheDay) {
-      allItems.unshift(this.drinkOfTheDay);
+    try {
+      const allItems = [...(this.menuItems || [])];
+      
+      if (this.drinkOfTheDay) {
+        allItems.unshift(this.drinkOfTheDay);
+      }
+      
+      if (__DEV__) {
+        console.log('Menu.getAllItems() returning:', allItems.length, 'items');
+      }
+      
+      return allItems;
+    } catch (error) {
+      if (__DEV__) {
+        console.error('Error in Menu.getAllItems():', error);
+      }
+      return [];
     }
-    
-    return allItems;
   }
 
   getItemsByType(type) {

@@ -116,7 +116,17 @@ export const useMenuViewModel = () => {
   }, [menuData]);
 
   const getMenuCategories = useCallback(() => {
-    return MenuUseCases.getMenuCategories(menuData);
+    try {
+      if (!menuData || !menuData.menuItems || menuData.menuItems.length === 0) {
+        return [];
+      }
+      return MenuUseCases.getMenuCategories(menuData);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('Error in getMenuCategories callback:', error);
+      }
+      return [];
+    }
   }, [menuData]);
 
   const clearSearch = useCallback(() => {
@@ -163,7 +173,18 @@ export const useMenuViewModel = () => {
     hasFeaturedDrink: !!menuData?.drinkOfTheDay,
     totalItemsCount: menuData?.menuItems?.length || 0,
     filteredItemsCount: filteredItems.length,
-    availableCategories: menuData ? MenuUseCases.getMenuCategories(menuData) : [],
+    availableCategories: (() => {
+      try {
+        return menuData && menuData.menuItems && menuData.menuItems.length > 0 
+          ? MenuUseCases.getMenuCategories(menuData) 
+          : [];
+      } catch (error) {
+        if (__DEV__) {
+          console.error('Error getting available categories:', error);
+        }
+        return [];
+      }
+    })(),
     isSearchActive: searchTerm.length >= 2,
     isCategoryFiltered: selectedCategory !== 'all'
   };

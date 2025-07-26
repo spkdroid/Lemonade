@@ -209,11 +209,30 @@ export class MenuUseCases {
   static getMenuCategories(menuData) {
     try {
       if (!menuData) {
+        if (__DEV__) {
+          console.log('MenuUseCases: No menu data provided for categories');
+        }
+        return [];
+      }
+
+      // Check if menuData has the required methods
+      if (typeof menuData.getAllItems !== 'function') {
+        if (__DEV__) {
+          console.error('MenuUseCases: menuData does not have getAllItems method');
+        }
         return [];
       }
 
       const allItems = menuData.getAllItems();
-      const categories = [...new Set(allItems.map(item => item.type).filter(Boolean))];
+      
+      if (!Array.isArray(allItems)) {
+        if (__DEV__) {
+          console.error('MenuUseCases: getAllItems did not return an array');
+        }
+        return [];
+      }
+
+      const categories = [...new Set(allItems.map(item => item?.type).filter(Boolean))];
       
       if (__DEV__) {
         console.log('MenuUseCases: Available categories:', categories);
