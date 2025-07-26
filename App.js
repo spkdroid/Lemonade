@@ -5,16 +5,16 @@
  * @format
  */
 
+import 'react-native-gesture-handler';
 import React from 'react';
-import { MenuProvider } from './src/context/MenuContext';
-import HomeScreen from './src/screens/HomeScreen';
 
-const App = () => {
+import { NavigationContainer } from '@react-navigation/native';
+import AppNavigator from './src/navigation/AppNavigator';
+
+export default function App() {
   return (
-    <MenuProvider>
-      <HomeScreen />
-    </MenuProvider>
+    <NavigationContainer>
+      <AppNavigator />
+    </NavigationContainer>
   );
-};
-
-export default App;
+}

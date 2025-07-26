@@ -13,9 +13,15 @@ import {
   StatusBar
 } from 'react-native';
 import { useMenuViewModel } from '../viewModels/useMenuViewModel';
+import { useCartViewModel } from '../viewModels/useCartViewModel';
+import { useNavigation } from '@react-navigation/native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+
+// Import custom icons
+const basketIcon = require('../assets/basket_icon.png');
+const cancelIcon = require('../assets/cancel_icon.png');
 
 const { width } = Dimensions.get('window');
 const itemWidth = (width - 40) / 2;
@@ -24,8 +30,19 @@ const HEADER_MIN_HEIGHT = 80;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
 const HomeScreen = () => {
+  console.log('HomeScreen rendering...');
+  
   const { menuData, loading, error, refresh } = useMenuViewModel();
+  console.log('useMenuViewModel executed successfully');
+  
+  const { cartItems, addToCart } = useCartViewModel();
+  console.log('useCartViewModel executed successfully');
+  
+  const navigation = useNavigation();
+  console.log('useNavigation executed successfully');
+  
   const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -50,12 +67,34 @@ const HomeScreen = () => {
 
   const openItemDetails = (item) => {
     setSelectedItem(item);
+    setSelectedSize(Object.keys(item.price)[0]); // Set default size
     setModalVisible(true);
   };
 
   const closeItemDetails = () => {
     setModalVisible(false);
     setSelectedItem(null);
+    setSelectedSize(null);
+  };
+
+  const handleAddToCart = async () => {
+    if (!selectedItem) return;
+    
+    try {
+      console.log('Adding to cart:', {
+        item: selectedItem,
+        selectedSize: selectedSize,
+        hasPrice: selectedItem.price,
+        hasName: selectedItem.name
+      });
+      
+      await addToCart(selectedItem, 1, selectedSize);
+      alert(`${selectedItem.name} added to cart!`);
+      closeItemDetails();
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add item to cart: ' + error.message);
+    }
   };
 
   const renderMenuItem = ({ item }) => (
@@ -113,11 +152,20 @@ const HomeScreen = () => {
       {/* Animated Header */}
       <Animated.View style={[styles.header, { height: headerHeight }]}>
         <Text style={styles.headerTitle}>Chill & Drink</Text>
-        <TouchableOpacity 
-                key={drinkOfTheDay.name} 
-                style={styles.featuredDescription}
-                onPress={() => openItemDetails(drinkOfTheDay)}
-              >
+        
+        {/* Original cart button - now using floating button instead */}
+        {/* <TouchableOpacity 
+          style={styles.cartIconContainer}
+          onPress={() => navigation.navigate('Cart')}
+        >
+          <MaterialIcons name="shopping-cart" size={24} color="#FFF" />
+          {cartItems.length > 0 && (
+            <View style={styles.cartBadge}>
+              <Text style={styles.cartBadgeText}>{cartItems.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity> */}
+
         {/* Featured Drink - will minimize on scroll */}
         <Animated.View style={[
           styles.featuredContainer, 
@@ -127,7 +175,10 @@ const HomeScreen = () => {
           }
         ]}>
           <Text style={styles.sectionTitle}>DRINK OF THE DAY</Text>
-           
+          <TouchableOpacity 
+            style={styles.featuredItem}
+            onPress={() => openItemDetails(drinkOfTheDay)}
+          >
             <Image source={{ uri: drinkOfTheDay.image }} style={styles.featuredImage} />
             <View style={styles.featuredContent}>
               <Text style={styles.featuredName}>{drinkOfTheDay.name}</Text>
@@ -141,8 +192,8 @@ const HomeScreen = () => {
                 </Text>
               </View>
             </View>
+          </TouchableOpacity>
         </Animated.View>
-         </TouchableOpacity>
       </Animated.View>
 
       {/* Scrollable Content */}
@@ -201,8 +252,9 @@ const HomeScreen = () => {
             <TouchableOpacity 
               style={styles.closeButton} 
               onPress={closeItemDetails}
+              activeOpacity={0.7}
             >
-              <MaterialIcons name="close" size={24} color="#FFF" />
+              <Image source={cancelIcon} style={styles.closeIconImage} />
             </TouchableOpacity>
             
             {selectedItem && (
@@ -224,13 +276,30 @@ const HomeScreen = () => {
                   </Text>
                   
                   <View style={styles.modalPriceSection}>
-                    <Text style={styles.modalPriceTitle}>Prices:</Text>
-                    <View style={styles.modalPrices}>
+                    <Text style={styles.modalPriceTitle}>Select Size:</Text>
+                    <View style={styles.sizeOptions}>
                       {Object.entries(selectedItem.price).map(([size, price]) => (
-                        <View key={size} style={styles.priceItem}>
-                          <Text style={styles.priceSize}>{size.toUpperCase()}</Text>
-                          <Text style={styles.priceValue}>${price}</Text>
-                        </View>
+                        <TouchableOpacity
+                          key={size}
+                          style={[
+                            styles.sizeOption,
+                            selectedSize === size && styles.selectedSizeOption
+                          ]}
+                          onPress={() => setSelectedSize(size)}
+                        >
+                          <Text style={[
+                            styles.sizeOptionText,
+                            selectedSize === size && styles.selectedSizeOptionText
+                          ]}>
+                            {size.toUpperCase()}
+                          </Text>
+                          <Text style={[
+                            styles.sizeOptionPrice,
+                            selectedSize === size && styles.selectedSizeOptionText
+                          ]}>
+                            ${price}
+                          </Text>
+                        </TouchableOpacity>
                       ))}
                     </View>
                   </View>
@@ -247,12 +316,35 @@ const HomeScreen = () => {
                       </View>
                     </View>
                   )}
+
+                  <TouchableOpacity 
+                    style={styles.addToCartButton}
+                    onPress={handleAddToCart}
+                  >
+                    <Text style={styles.addToCartButtonText}>Add to Cart</Text>
+                  </TouchableOpacity>
                 </View>
               </>
             )}
           </View>
         </View>
       </Modal>
+
+      {/* Floating Cart Button */}
+      <TouchableOpacity 
+        style={styles.floatingCartButton}
+        onPress={() => navigation.navigate('Cart')}
+        activeOpacity={0.8}
+      >
+        <Image source={basketIcon} style={styles.basketIconImage} />
+        {cartItems.length > 0 && (
+          <View style={styles.floatingCartBadge}>
+            <Text style={styles.floatingCartBadgeText}>
+              {cartItems.length > 99 ? '99+' : cartItems.length}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
     </View>
   );
 };
@@ -316,26 +408,51 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   header: {
-    padding: 20,
-    paddingTop: 40,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#FF6B6B',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#FFF',
     textAlign: 'center',
+    marginBottom: 5,
   },
-  headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    marginTop: 5,
+  cartIconContainer: {
+    position: 'absolute',
+    right: 20,
+    top: 40,
+  },
+  cartBadge: {
+    position: 'absolute',
+    right: -5,
+    top: -5,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cartBadgeText: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   featuredContainer: {
+    width: '100%',
     padding: 20,
+    alignItems: 'center',
+  },
+  scrollContent: {
+    paddingBottom: 30,
   },
   sectionTitle: {
     fontSize: 18,
@@ -353,6 +470,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
+    width: '100%',
   },
   featuredImage: {
     width: '100%',
@@ -386,9 +504,6 @@ const styles = StyleSheet.create({
   menuContainer: {
     paddingHorizontal: 15,
     marginBottom: 10,
-  },
-  menuList: {
-    paddingBottom: 20,
   },
   menuRow: {
     justifyContent: 'space-between',
@@ -486,13 +601,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 15,
     right: 15,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    backgroundColor: '#FF5252',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 4,
+    borderWidth: 2,
+    borderColor: '#FFF',
   },
   modalImage: {
     width: '100%',
@@ -577,6 +702,104 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 14,
     color: '#555',
+  },
+  sizeOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+  },
+  sizeOption: {
+    padding: 10,
+    marginRight: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+    borderRadius: 10,
+  },
+  selectedSizeOption: {
+    backgroundColor: '#FF6B6B',
+  },
+  sizeOptionText: {
+    color: '#FF6B6B',
+    fontWeight: 'bold',
+  },
+  selectedSizeOptionText: {
+    color: '#FFF',
+  },
+  sizeOptionPrice: {
+    color: '#FF6B6B',
+    fontSize: 12,
+  },
+  addToCartButton: {
+    backgroundColor: '#FF6B6B',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  addToCartButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  floatingCartButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FF6B6B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    zIndex: 1000,
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  basketIconImage: {
+    width: 30,
+    height: 30,
+    tintColor: '#FFF',
+  },
+  closeIconImage: {
+    width: 18,
+    height: 18,
+    tintColor: '#FFF',
+  },
+  floatingCartBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#FF9500',
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 4,
+  },
+  floatingCartBadgeText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

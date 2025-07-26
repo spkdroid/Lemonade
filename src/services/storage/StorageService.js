@@ -21,4 +21,32 @@ export class StorageService {
       return null;
     }
   }
+
+  // Generic storage methods
+  static async setItem(key, value) {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (e) {
+      console.error('Error setting item:', e);
+      throw e;
+    }
+  }
+
+  static async getItem(key) {
+    try {
+      return await AsyncStorage.getItem(key);
+    } catch (e) {
+      console.error('Error getting item:', e);
+      throw e;
+    }
+  }
+
+  static async removeItem(key) {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch (e) {
+      console.error('Error removing item:', e);
+      throw e;
+    }
+  }
 }
