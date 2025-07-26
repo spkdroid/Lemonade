@@ -112,9 +112,12 @@ const HomeScreen = () => {
       
       {/* Animated Header */}
       <Animated.View style={[styles.header, { height: headerHeight }]}>
-        <Text style={styles.headerTitle}>ORANGE LEMONADE</Text>
-        <Text style={styles.headerSubtitle}>Fresh & Natural Drinks</Text>
-        
+        <Text style={styles.headerTitle}>Chill & Drink</Text>
+        <TouchableOpacity 
+                key={drinkOfTheDay.name} 
+                style={styles.featuredDescription}
+                onPress={() => openItemDetails(drinkOfTheDay)}
+              >
         {/* Featured Drink - will minimize on scroll */}
         <Animated.View style={[
           styles.featuredContainer, 
@@ -124,10 +127,7 @@ const HomeScreen = () => {
           }
         ]}>
           <Text style={styles.sectionTitle}>DRINK OF THE DAY</Text>
-          <TouchableOpacity 
-            style={styles.featuredItem}
-            onPress={() => openItemDetails(drinkOfTheDay)}
-          >
+           
             <Image source={{ uri: drinkOfTheDay.image }} style={styles.featuredImage} />
             <View style={styles.featuredContent}>
               <Text style={styles.featuredName}>{drinkOfTheDay.name}</Text>
@@ -141,8 +141,8 @@ const HomeScreen = () => {
                 </Text>
               </View>
             </View>
-          </TouchableOpacity>
         </Animated.View>
+         </TouchableOpacity>
       </Animated.View>
 
       {/* Scrollable Content */}
