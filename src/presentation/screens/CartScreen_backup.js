@@ -18,6 +18,57 @@ import DeliveryEditModal from '../components/DeliveryEditModal';
 import CheckoutBillModal from '../components/CheckoutBillModal';
 import { ConfirmationModal } from '../components/AddToCartModal';
 import OrderReceiptModal from '../components/OrderReceiptModal';
+          
+          {/* TEST BUTTON - Remove after debugging */}
+          <TouchableOpacity 
+            style={[styles.continueShoppingButton, { backgroundColor: '#FF6B35', marginTop: 10 }]}
+            onPress={() => {
+              console.log('CartScreen: Test button pressed from empty cart');
+              const testOrderData = {
+                orderNumber: 'TEST-' + Date.now(),
+                orderDate: new Date(),
+                cartItems: [
+                  {
+                    id: 'test-1',
+                    name: 'Test Classic Lemonade',
+                    price: 4.99,
+                    quantity: 2,
+                    selectedSize: 'Medium'
+                  },
+                  {
+                    id: 'test-2',
+                    name: 'Test Strawberry Lemonade',
+                    price: 5.99,
+                    quantity: 1,
+                    selectedSize: 'Large'
+                  }
+                ],
+                deliveryInfo: {
+                  getDisplayName: () => 'Test Customer',
+                  getFormattedAddress: () => '123 Test St, Test City, TC 12345',
+                  phoneNumber: '+1 (555) 123-4567'
+                },
+                subtotal: 15.97,
+                deliveryFee: 3.99,
+                tax: 1.28,
+                total: 21.24,
+                estimatedDeliveryTime: '25-35 minutes'
+              };
+              
+              console.log('CartScreen: Calling showOrderReceipt with test data from empty cart');
+              showOrderReceipt(testOrderData);
+            }}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.continueShoppingText}>TEST RECEIPT MODAL</Text>
+          </TouchableOpacity>wModel';
+import { useCheckoutViewModel } from '../viewModels/useCheckoutViewModel';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import DeliveryCard from '../components/DeliveryCard';
+import DeliveryEditModal from '../components/DeliveryEditModal';
+import CheckoutBillModal from '../components/CheckoutBillModal';
+import { ConfirmationModal } from '../components/AddToCartModal';
+import OrderReceiptModal from '../components/OrderReceiptModal';
 
 // Import custom icons
 const addIcon = require('../assets/add_icon.png');
@@ -276,7 +327,7 @@ const CartScreen = ({ navigation }) => {
       <TouchableOpacity 
         onPress={() => handleRemoveItem(item)}
         style={styles.removeButton}
-        activeOpacity={0.6}
+        activeOpacity={0.7}
       >
         <View style={styles.removeButtonContainer}>
           <Image source={cancelIcon} style={styles.removeIconImage} />
@@ -288,7 +339,7 @@ const CartScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF6B6B" />
+        <Text>Loading your cart...</Text>
       </View>
     );
   }
@@ -296,46 +347,74 @@ const CartScreen = ({ navigation }) => {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
+        <Text style={styles.errorText}>Error loading cart: {error}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Order Receipt Modal - Always render this outside conditional blocks */}
-      <OrderReceiptModal
-        visible={orderReceiptModal.visible}
-        onClose={() => {
-          console.log('OrderReceiptModal: onClose called');
-          setOrderReceiptModal({ visible: false, orderData: null });
-        }}
-        orderData={orderReceiptModal.orderData}
-        onGoToHome={() => {
-          console.log('OrderReceiptModal: onGoToHome called');
-          setOrderReceiptModal({ visible: false, orderData: null });
-          navigation.navigate('Home');
-        }}
-      />
-
-      {(!cartItems || cartItems.length === 0) ? (
+      {cartItems.length === 0 ? (
         <View style={styles.emptyCart}>
           <View style={styles.emptyCartIconContainer}>
-            <MaterialIcons name="shopping-cart" size={80} color="#DDD" />
+            <MaterialIcons name="shopping-cart" size={50} color="#FF6B6B" />
             <View style={styles.emptyIconOverlay}>
-              <MaterialIcons name="close" size={30} color="#FF6B6B" />
+              <MaterialIcons name="block" size={70} color="#FFB6B6" />
             </View>
           </View>
           <Text style={styles.emptyCartText}>Your cart is empty</Text>
           <Text style={styles.emptyCartSubtext}>Add some delicious drinks to get started!</Text>
-          
           <TouchableOpacity 
             style={styles.continueShoppingButton}
-            onPress={() => navigation.navigate('Menu')}
+            onPress={() => navigation.goBack()}
             activeOpacity={0.8}
           >
             <MaterialIcons name="store" size={20} color="#FFF" style={styles.buttonIcon} />
             <Text style={styles.continueShoppingText}>Continue Shopping</Text>
+          </TouchableOpacity>
+          
+          {/* TEST BUTTON - Remove after debugging */}
+          <TouchableOpacity 
+            style={[styles.continueShoppingButton, { backgroundColor: '#FF6B35', marginTop: 10 }]}
+            onPress={() => {
+              console.log('CartScreen: Test button pressed');
+              const testOrderData = {
+                orderNumber: 'TEST-' + Date.now(),
+                orderDate: new Date(),
+                cartItems: [
+                  {
+                    id: 'test-1',
+                    name: 'Test Classic Lemonade',
+                    price: 4.99,
+                    quantity: 2,
+                    selectedSize: 'Medium'
+                  },
+                  {
+                    id: 'test-2',
+                    name: 'Test Strawberry Lemonade',
+                    price: 5.99,
+                    quantity: 1,
+                    selectedSize: 'Large'
+                  }
+                ],
+                deliveryInfo: {
+                  getDisplayName: () => 'Test Customer',
+                  getFormattedAddress: () => '123 Test St, Test City, TC 12345',
+                  phoneNumber: '+1 (555) 123-4567'
+                },
+                subtotal: 15.97,
+                deliveryFee: 3.99,
+                tax: 1.28,
+                total: 21.24,
+                estimatedDeliveryTime: '25-35 minutes'
+              };
+              
+              console.log('CartScreen: Calling showOrderReceipt with test data');
+              showOrderReceipt(testOrderData);
+            }}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.continueShoppingText}>TEST RECEIPT MODAL</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -381,36 +460,57 @@ const CartScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
+          {/* Order Receipt Modal - Always render this outside conditional blocks */}
+          <OrderReceiptModal
+            visible={orderReceiptModal.visible}
+            onClose={() => {
+              console.log('OrderReceiptModal: onClose called');
+              setOrderReceiptModal({ visible: false, orderData: null });
+            }}
+            orderData={orderReceiptModal.orderData}
+            onGoToHome={() => {
+              console.log('OrderReceiptModal: onGoToHome called');
+              setOrderReceiptModal({ visible: false, orderData: null });
+              navigation.navigate('Home');
+            }}
+          />
+
           {/* Other Modals - Only show when cart has items */}
-          <DeliveryEditModal 
-            visible={isDeliveryModalVisible}
-            onClose={handleCloseDeliveryModal}
-            deliveryInfo={deliveryInfo}
-            onSave={handleSaveDeliveryInfo}
-            loading={deliveryLoading}
-            validationErrors={validationErrors}
-          />
+          {cartItems && cartItems.length > 0 && (
+            <>
+              {/* Delivery Edit Modal */}
+              <DeliveryEditModal 
+                visible={isDeliveryModalVisible}
+                onClose={handleCloseDeliveryModal}
+                deliveryInfo={deliveryInfo}
+                onSave={handleSaveDeliveryInfo}
+                loading={deliveryLoading}
+                validationErrors={validationErrors}
+              />
 
-          <CheckoutBillModal
-            visible={isCheckoutModalVisible}
-            onClose={() => setIsCheckoutModalVisible(false)}
-            onConfirm={processOrder}
-            cartItems={cartItems}
-            deliveryInfo={deliveryInfo}
-            total={getTotal()}
-            loading={checkoutLoading}
-          />
+              {/* Custom Modals */}
+              <CheckoutBillModal
+                visible={isCheckoutModalVisible}
+                onClose={() => setIsCheckoutModalVisible(false)}
+                onConfirm={processOrder}
+                cartItems={cartItems}
+                deliveryInfo={deliveryInfo}
+                total={getTotal()}
+                loading={checkoutLoading}
+              />
 
-          <ConfirmationModal
-            visible={removeItemModal.visible}
-            onClose={() => setRemoveItemModal({ visible: false, item: null })}
-            onConfirm={confirmRemoveItem}
-            title="Remove Item"
-            message={`Remove ${removeItemModal.item?.name || 'this item'} from your cart?`}
-            confirmText="Remove"
-            cancelText="Cancel"
-            type="warning"
-          />
+              <ConfirmationModal
+                visible={removeItemModal.visible}
+                onClose={() => setRemoveItemModal({ visible: false, item: null })}
+                onConfirm={confirmRemoveItem}
+                title="Remove Item"
+                message={`Remove ${removeItemModal.item?.name || 'this item'} from your cart?`}
+                confirmText="Remove"
+                cancelText="Cancel"
+                type="warning"
+              />
+            </>
+          )}
         </>
       )}
     </View>
@@ -455,6 +555,7 @@ const styles = StyleSheet.create({
   emptyCartText: {
     fontSize: 18,
     color: '#333',
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   emptyCartSubtext: {
@@ -465,7 +566,7 @@ const styles = StyleSheet.create({
   },
   continueShoppingButton: {
     backgroundColor: '#FF6B6B',
-    paddingVertical: 15,
+    paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 25,
     flexDirection: 'row',
@@ -476,36 +577,33 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  buttonIcon: {
+    marginRight: 8,
+  },
   continueShoppingText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  buttonIcon: {
-    marginRight: 8,
   },
   cartList: {
     padding: 15,
   },
   cartItem: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
-    borderRadius: 12,
     padding: 15,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
     marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
+    elevation: 2,
   },
   cartItemImage: {
     width: 80,
     height: 80,
     borderRadius: 10,
-    backgroundColor: '#F5F5F5',
   },
   cartItemDetails: {
     flex: 1,
