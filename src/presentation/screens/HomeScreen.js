@@ -10,7 +10,9 @@ import {
   Modal, 
   Dimensions,
   Animated,
-  StatusBar
+  StatusBar,
+  TextInput,
+  SafeAreaView
 } from 'react-native';
 import { useMenuViewModel } from '../viewModels/useMenuViewModel';
 import { useCartViewModel } from '../viewModels/useCartViewModel';

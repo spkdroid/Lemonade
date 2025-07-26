@@ -1,6 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from '../screens/HomeScreen';
+import ModernHomeScreen from '../screens/ModernHomeScreen';
 import CartScreen from '../screens/CartScreen';
 
 const Stack = createNativeStackNavigator();
@@ -12,7 +12,7 @@ function AppNavigator() {
     <Stack.Navigator initialRouteName="Home">
       <Stack.Screen 
         name="Home" 
-        component={HomeScreen} 
+        component={ModernHomeScreen} 
         options={{ headerShown: false }} 
       />
       <Stack.Screen 
