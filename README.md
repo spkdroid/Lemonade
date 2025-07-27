@@ -309,6 +309,8 @@ This project was developed with the assistance of advanced AI tools and technolo
   - Architecture planning and design patterns
   - Code review and optimization suggestions
   - Documentation and technical writing assistance
+ 
+All contributions from AI tools were reviewed, verified, and curated by the author.
 
 ### Special Thanks
 
