@@ -62,6 +62,7 @@ const MenuScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [addToCartModalVisible, setAddToCartModalVisible] = useState(false);
   const [addedItem, setAddedItem] = useState(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -132,7 +133,8 @@ const MenuScreen = () => {
   };
 
   const handleAddToCart = async () => {
-    if (!selectedItem) return;
+    // Prevent multiple rapid taps
+    if (!selectedItem || isAddingToCart) return;
     
     const validation = validateItemForOrder(selectedItem);
     
@@ -142,7 +144,11 @@ const MenuScreen = () => {
     }
     
     try {
-      await addToCart(selectedItem, 1, selectedSize);
+      // Set loading state immediately for instant feedback
+      setIsAddingToCart(true);
+      
+      // Add to cart with optimistic UI
+      const result = await addToCart(selectedItem, 1, selectedSize);
       
       // Set the added item and show the custom modal
       setAddedItem({
@@ -150,11 +156,20 @@ const MenuScreen = () => {
         selectedSize: selectedSize,
         quantity: 1
       });
+      
+      // Close details modal first, then show success modal
       closeItemDetails();
-      setAddToCartModalVisible(true);
+      
+      // Small delay to allow modal close animation
+      setTimeout(() => {
+        setAddToCartModalVisible(true);
+      }, 100);
+      
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add item to cart: ' + error.message);
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -423,13 +438,32 @@ const MenuScreen = () => {
                   </View>
                 )}
                 
-                <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
-                  <Text style={styles.addToCartText}>Add to Cart</Text>
-                  <Text style={styles.addToCartPrice}>
-                    ${selectedItem.price && selectedSize ? 
-                      (typeof selectedItem.price[selectedSize] === 'number' ? 
-                        selectedItem.price[selectedSize].toFixed(2) : '0.00') : '0.00'}
-                  </Text>
+                <TouchableOpacity 
+                  style={[
+                    styles.addToCartButton,
+                    isAddingToCart && styles.addToCartButtonDisabled
+                  ]} 
+                  onPress={handleAddToCart}
+                  disabled={isAddingToCart}
+                  activeOpacity={isAddingToCart ? 1 : 0.8}
+                >
+                  {isAddingToCart ? (
+                    <View style={styles.addToCartButtonContent}>
+                      <ActivityIndicator size="small" color="#999999" />
+                      <Text style={[styles.addToCartText, styles.addToCartTextDisabled]}>
+                        Adding...
+                      </Text>
+                    </View>
+                  ) : (
+                    <>
+                      <Text style={styles.addToCartText}>Add to Cart</Text>
+                      <Text style={styles.addToCartPrice}>
+                        ${selectedItem.price && selectedSize ? 
+                          (typeof selectedItem.price[selectedSize] === 'number' ? 
+                            selectedItem.price[selectedSize].toFixed(2) : '0.00') : '0.00'}
+                      </Text>
+                    </>
+                  )}
                 </TouchableOpacity>
               </View>
             </>
@@ -961,10 +995,24 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
   },
+  addToCartButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  addToCartButtonDisabled: {
+    backgroundColor: '#CCCCCC',
+    opacity: 0.7,
+  },
   addToCartText: {
     color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  addToCartTextDisabled: {
+    color: '#999999',
   },
   addToCartPrice: {
     color: '#FFF',

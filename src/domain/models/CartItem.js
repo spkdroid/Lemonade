@@ -1,20 +1,7 @@
 export class CartItem {
   constructor(item = {}, quantity = 1, selectedSize = null, selectedOptions = []) {
-    if (__DEV__) {
-      console.log('CartItem constructor called with:', {
-        item: item,
-        quantity: quantity,
-        selectedSize: selectedSize,
-        itemPrice: item.price,
-        itemName: item.name
-      });
-    }
-    
     // Handle undefined item gracefully
     if (!item || typeof item !== 'object') {
-      if (__DEV__) {
-        console.error('Invalid item passed to CartItem constructor:', item);
-      }
       item = { name: 'Unknown Item', price: 0, type: 'unknown' };
     }
     
