@@ -16,6 +16,18 @@
 
 > **Note**: Click on the download links above, then click on the latest successful workflow run, and download the APK from the "Artifacts" section.
 
+## 🎬 App Demo
+
+<div align="center">
+
+### 📱 See Chill N Drink in Action
+
+https://github.com/spkdroid/Lemonade/raw/master/screenshots/Demo.mp4
+
+*Experience the smooth, intuitive interface of our beverage ordering app*
+
+</div>
+
 A modern, professional beverage ordering mobile application built with React Native. Chill N Drink offers a seamless experience for browsing and ordering refreshing drinks with a beautiful, intuitive interface inspired by leading food delivery platforms.
 
 ## 📱 About Chill N Drink
