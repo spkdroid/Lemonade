@@ -77,16 +77,19 @@ Chill N Drink integrates with robust backend services to provide real-time funct
 
 ## 📸 Screenshots
 
-> 📝 **Note**: Screenshots will be added here showcasing the app's beautiful interface
+Here are a few screenshots showcasing key features of the app:
 
-### Menu Screen
-*Coming Soon - Professional menu browsing experience*
+| Home Screen | Menu List | Add to Cart |
+|-------------|-------------|--------------|
+| <img src="screenshots/1.png" width="200"/> | <img src="screenshots/2.png" width="200"/> | <img src="screenshots/3.png" width="200"/> |
 
-### Cart & Checkout
-*Coming Soon - Seamless ordering workflow*
+| Add to Cart | Checkout | Order Confirmation |
+|-------------|-------------|--------------|
+| <img src="screenshots/4.1.png" width="200"/> | <img src="screenshots/5.png" width="200"/> | <img src="screenshots/6.png" width="200"/> |
 
-### Search & Categories
-*Coming Soon - Smart filtering and discovery*
+| Checkout Success |
+|-------------|
+| <img src="screenshots/7.png" width="200"/> |
 
 ## 🚀 Getting Started
 
