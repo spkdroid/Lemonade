@@ -85,19 +85,24 @@ cd android && ./gradlew bundleRelease
 
 ### Common Issues
 
-1. **Keystore Issues**
+1. **Dependency Resolution Issues**
+   - The project uses `--legacy-peer-deps` to resolve React version conflicts
+   - This is normal for React Native projects with modern React versions
+   - The `.npmrc` file is configured to handle this automatically
+
+2. **Keystore Issues**
    - Ensure the keystore is properly base64 encoded
    - Verify all passwords and alias names are correct
    - Check that the keystore file exists in your repository (if using a committed keystore)
 
-2. **Gradle Build Failures**
+3. **Gradle Build Failures**
    - Clear Gradle cache: `./gradlew clean`
    - Check Java version compatibility (requires Java 17)
    - Verify Android SDK components are installed
 
-3. **Test Failures**
+4. **Test Failures**
    - Run tests locally first: `npm test`
-   - Check for missing dependencies: `npm install`
+   - Check for missing dependencies: `npm install --legacy-peer-deps`
    - Verify Jest configuration is correct
 
 ### Viewing Build Logs
