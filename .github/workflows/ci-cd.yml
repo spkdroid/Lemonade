@@ -1,0 +1,175 @@
+name: Build and Test React Native App
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linter
+      run: npm run lint
+
+    - name: Run tests
+      run: npm run test:coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Make gradlew executable
+      run: chmod +x android/gradlew
+
+    - name: Create release keystore from secrets
+      run: |
+        echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > android/app/release-key.keystore
+        echo "MYAPP_RELEASE_STORE_FILE=release-key.keystore" >> android/gradle.properties
+        echo "MYAPP_RELEASE_KEY_ALIAS=${{ secrets.RELEASE_KEY_ALIAS }}" >> android/gradle.properties
+        echo "MYAPP_RELEASE_STORE_PASSWORD=${{ secrets.RELEASE_STORE_PASSWORD }}" >> android/gradle.properties
+        echo "MYAPP_RELEASE_KEY_PASSWORD=${{ secrets.RELEASE_KEY_PASSWORD }}" >> android/gradle.properties
+
+    - name: Build Android Release APK
+      run: |
+        cd android
+        ./gradlew assembleRelease --no-daemon
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apk
+        path: android/app/build/outputs/apk/release/app-release.apk
+        retention-days: 30
+
+    - name: Create Release
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: android/app/build/outputs/apk/release/app-release.apk
+        tag_name: v${{ github.run_number }}
+        name: Release v${{ github.run_number }}
+        body: |
+          Automated release created from commit ${{ github.sha }}
+          
+          Changes in this release:
+          ${{ github.event.head_commit.message }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-bundle:
+    name: Build Android Bundle (AAB)
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Make gradlew executable
+      run: chmod +x android/gradlew
+
+    - name: Create release keystore from secrets
+      run: |
+        echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > android/app/release-key.keystore
+        echo "MYAPP_RELEASE_STORE_FILE=release-key.keystore" >> android/gradle.properties
+        echo "MYAPP_RELEASE_KEY_ALIAS=${{ secrets.RELEASE_KEY_ALIAS }}" >> android/gradle.properties
+        echo "MYAPP_RELEASE_STORE_PASSWORD=${{ secrets.RELEASE_STORE_PASSWORD }}" >> android/gradle.properties
+        echo "MYAPP_RELEASE_KEY_PASSWORD=${{ secrets.RELEASE_KEY_PASSWORD }}" >> android/gradle.properties
+
+    - name: Build Android Bundle (AAB)
+      run: |
+        cd android
+        ./gradlew bundleRelease --no-daemon
+
+    - name: Upload Bundle artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-bundle
+        path: android/app/build/outputs/bundle/release/app-release.aab
+        retention-days: 30
