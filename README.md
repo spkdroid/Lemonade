@@ -1,4 +1,4 @@
-# 🥤 Chill N Drink
+# 🥤 Chill 'N' Drink
 
 [![React Native](https://img.shields.io/badge/React%20Native-0.75+-blue.svg)](https://reactnative.dev/)
 [![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-lightgrey.svg)](https://reactnative.dev/)
