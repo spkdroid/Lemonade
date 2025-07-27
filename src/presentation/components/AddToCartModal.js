@@ -53,8 +53,14 @@ const AddToCartModal = ({
       animationType="fade"
       transparent={true}
       onRequestClose={onClose}
+      statusBarTranslucent={true}
     >
       <View style={styles.overlay}>
+        <TouchableOpacity 
+          style={styles.overlayBackground} 
+          activeOpacity={1} 
+          onPress={onClose}
+        />
         <Animated.View 
           style={[
             styles.modalContainer,
@@ -208,10 +214,18 @@ const ConfirmationModal = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    position: 'relative',
+  },
+  overlayBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer: {
     backgroundColor: 'white',
@@ -224,6 +238,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
+    zIndex: 1,
   },
   iconContainer: {
     alignItems: 'center',

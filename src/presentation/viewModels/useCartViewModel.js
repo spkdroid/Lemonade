@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { CartRepository } from '../../data/repositories/CartRepository';
 
 /**
@@ -10,7 +10,7 @@ export const useCartViewModel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadCart = async () => {
+  const loadCart = useCallback(async () => {
     try {
       setLoading(true);
       const items = await CartRepository.getCart();
@@ -21,18 +21,21 @@ export const useCartViewModel = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const addToCart = async (item, quantity = 1, selectedSize = null, selectedOptions = []) => {
+  const addToCart = useCallback(async (item, quantity = 1, selectedSize = null, selectedOptions = []) => {
     try {
+      setError(null); // Clear any previous errors
       const updatedCart = await CartRepository.addToCart(item, quantity, selectedSize, selectedOptions);
       setCartItems(updatedCart);
       return updatedCart;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      console.error('Cart ViewModel - Add to cart error:', err);
+      const errorMessage = err.message || 'Failed to add item to cart';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
-  };
+  }, []);
 
   const removeFromCart = async (itemId) => {
     try {
