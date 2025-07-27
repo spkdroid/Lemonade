@@ -131,8 +131,8 @@ Before running Chill N Drink, ensure you have completed the [React Native Enviro
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/chill-n-drink.git
-   cd chill-n-drink
+   git clone https://github.com/spkdroid/Lemonade
+   cd Lemonade
    ```
 
 2. **Install dependencies**
