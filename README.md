@@ -4,6 +4,18 @@
 [![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-lightgrey.svg)](https://reactnative.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 
+[![Build Status](https://github.com/spkdroid/Lemonade/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/spkdroid/Lemonade/actions/workflows/ci-cd.yml)
+[![Tests](https://img.shields.io/badge/Tests-80%20Passing-green.svg)](https://github.com/spkdroid/Lemonade/actions)
+
+## 📥 Download Latest Build
+
+| Build Type | Status | Download |
+|------------|--------|----------|
+| 🐛 **Debug APK** | [![Debug Build](https://img.shields.io/badge/Debug-Latest-blue.svg)](https://github.com/spkdroid/Lemonade/actions/workflows/ci-cd.yml) | [📱 Download Debug APK](https://github.com/spkdroid/Lemonade/actions/workflows/ci-cd.yml) |
+| 🚀 **Release APK** | [![Release Build](https://img.shields.io/badge/Release-Latest-green.svg)](https://github.com/spkdroid/Lemonade/actions/workflows/ci-cd.yml) | [📱 Download Release APK](https://github.com/spkdroid/Lemonade/actions/workflows/ci-cd.yml) |
+
+> **Note**: Click on the download links above, then click on the latest successful workflow run, and download the APK from the "Artifacts" section.
+
 A modern, professional beverage ordering mobile application built with React Native. Chill N Drink offers a seamless experience for browsing and ordering refreshing drinks with a beautiful, intuitive interface inspired by leading food delivery platforms.
 
 ## 📱 About Chill N Drink
